@@ -23,10 +23,10 @@
 # align reads
 
 STAR \
---genomeDir genotype/STAR_index \
+--genomeDir outputs/genotype/STAR_index \
 --runThreadN 10 \
 --readFilesIn ../../data/HGSOC/gnomex/18431R/Fastq/18431X5_201016_A00421_0249_BHKN3JDSXY_S64_L003_R1_001.fastq.gz ../../data/HGSOC/gnomex/18431R/Fastq/18431X5_201016_A00421_0249_BHKN3JDSXY_S64_L003_R2_001.fastq.gz \
---outFileNamePrefix genotype/18431X5/STAR/ \
+--outFileNamePrefix outputs/genotype/18431X5/STAR/ \
 --readFilesCommand gunzip -c \
 --outSAMtype BAM SortedByCoordinate \
 --limitGenomeGenerateRAM 200000000000
@@ -36,5 +36,5 @@ STAR \
 # Index BAM
 # ---------
 
-samtools index genotype/18431X5/STAR/Aligned.sortedByCoord.out.bam
+samtools index outputs/genotype/18431X5/STAR/Aligned.sortedByCoord.out.bam
 

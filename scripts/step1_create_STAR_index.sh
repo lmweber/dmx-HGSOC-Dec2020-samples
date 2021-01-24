@@ -25,7 +25,7 @@
 STAR \
 --runMode genomeGenerate \
 --runThreadN 10 \
---genomeDir genotype/STAR_index \
+--genomeDir outputs/genotype/STAR_index \
 --genomeFastaFiles ../../cellranger/refdata-gex-GRCh38-2020-A/fasta/genome.fa \
 --sjdbGTFfile ../../cellranger/refdata-gex-GRCh38-2020-A/genes/genes.gtf \
 --limitGenomeGenerateRAM 200000000000

@@ -19,17 +19,17 @@
 # Run bcftools mpileup
 # --------------------
 
-mkdir -p genotype/bcftools
+mkdir -p outputs/genotype/bcftools
 
 bcftools mpileup -Ou \
 -f ../../cellranger/refdata-gex-GRCh38-2020-A/fasta/genome.fa \
-genotype/18431X1/STAR/Aligned.sortedByCoord.out.bam \
-genotype/18431X2/STAR/Aligned.sortedByCoord.out.bam \
-genotype/18431X3/STAR/Aligned.sortedByCoord.out.bam \
-genotype/18431X4/STAR/Aligned.sortedByCoord.out.bam \
-genotype/18431X5/STAR/Aligned.sortedByCoord.out.bam \
-genotype/18431X6/STAR/Aligned.sortedByCoord.out.bam \
-genotype/18431X7/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X1/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X2/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X3/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X4/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X5/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X6/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X7/STAR/Aligned.sortedByCoord.out.bam \
 bcftools call -mv -Ov \
--o genotype/bcftools/bcftools_HGSOC_Dec2020_samples.vcf
+-o outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_samples.vcf
 
