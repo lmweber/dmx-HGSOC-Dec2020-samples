@@ -32,8 +32,8 @@ cd outputs/cellranger
 # since other values tend to give unexpected errors on our cluster
 cellranger count --id=18389X2 \
 --description=18389X2 \
---transcriptome=../../cellranger/refdata-gex-GRCh38-2020-A \
---fastqs=../../data/HGSOC/gnomex/18389R/Fastq/18389X2 \
+--transcriptome=../../../cellranger/refdata-gex-GRCh38-2020-A \
+--fastqs=../../../data/HGSOC/gnomex/18389R/Fastq/18389X2 \
 --sample=18389X2 \
 --nosecondary \
 --jobmode=local \
