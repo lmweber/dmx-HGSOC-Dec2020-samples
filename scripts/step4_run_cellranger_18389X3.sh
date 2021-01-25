@@ -34,7 +34,7 @@ cellranger count --id=18389X3 \
 --description=18389X3 \
 --transcriptome=../../../../cellranger/refdata-gex-GRCh38-2020-A \
 --fastqs=../../../../data/HGSOC/gnomex/18389R/Fastq/18389X3 \
---sample=18389X3 \
+--sample=18389X3_201208_A00421_0264_AHM2VMDSXY \
 --nosecondary \
 --jobmode=local \
 --localcores=10 \
