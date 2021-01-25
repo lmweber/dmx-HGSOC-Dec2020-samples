@@ -15,6 +15,8 @@
 
 # note: requires STAR index from previous script "create_STAR_index.sh"
 
+# runtime: ~1.5 hours
+
 
 # --------
 # Run STAR

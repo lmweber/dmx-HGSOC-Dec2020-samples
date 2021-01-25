@@ -15,6 +15,8 @@
 
 # note: creating STAR index requires up to 200GB of memory
 
+# runtime: ~1.5 hours
+
 
 # -----------------
 # Create STAR index
