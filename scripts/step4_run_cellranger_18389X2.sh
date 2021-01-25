@@ -23,7 +23,7 @@
 # set working directory for output path (Cell Ranger does not have any other 
 # option to specify output directory)
 cwd=$(pwd)
-mkdir outputs/cellranger
+mkdir -p outputs/cellranger
 cd outputs/cellranger
 
 
