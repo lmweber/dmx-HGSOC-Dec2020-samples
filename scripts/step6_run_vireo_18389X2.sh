@@ -21,5 +21,5 @@
 # runtime: ~30 min
 
 
-vireo -c outputs/cellSNP/18389X3 -N 7 -o outputs/vireo/18389X3 --randSeed=123
+vireo -c outputs/cellSNP/18389X2 -N 7 -o outputs/vireo/18389X2 --randSeed=123
 
