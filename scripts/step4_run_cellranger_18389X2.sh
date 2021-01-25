@@ -2,7 +2,7 @@
 #$ -V
 #$ -cwd
 #$ -pe local 10
-#$ -l mem_free=5G,h_vmem=10G,h_fsize=100G
+#$ -l mem_free=6G,h_vmem=12G,h_fsize=300G
 
 # qsub <scripts/filename.sh>
 
