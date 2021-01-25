@@ -29,7 +29,7 @@ outputs/genotype/18431X3/STAR/Aligned.sortedByCoord.out.bam \
 outputs/genotype/18431X4/STAR/Aligned.sortedByCoord.out.bam \
 outputs/genotype/18431X5/STAR/Aligned.sortedByCoord.out.bam \
 outputs/genotype/18431X6/STAR/Aligned.sortedByCoord.out.bam \
-outputs/genotype/18431X7/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X7/STAR/Aligned.sortedByCoord.out.bam | \
 bcftools call -mv -Ov \
 -o outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_samples.vcf
 
