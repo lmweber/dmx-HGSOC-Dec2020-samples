@@ -23,7 +23,7 @@
 # - https://github.com/single-cell-genetics/cellSNP
 
 
-cellSNP-lite \
+cellsnp-lite \
 -s outputs/cellranger/18389X2/outs/possorted_genome_bam.bam \
 -b outputs/cellranger/18389X2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
 -O outputs/cellSNP/18389X2 \
