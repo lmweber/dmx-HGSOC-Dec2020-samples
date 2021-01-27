@@ -14,6 +14,8 @@
 
 # note: requires BAM files from previous scripts "align_index_bulk.sh"
 
+# runtime: ~1 day
+
 
 # --------------------
 # Run bcftools mpileup
