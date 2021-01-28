@@ -34,5 +34,6 @@ cellsnp-lite \
 -R outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_samples.vcf \
 -p 10 \
 --minMAF=0.1 \
---minCOUNT=20
+--minCOUNT=20 \
+--gzip
 
