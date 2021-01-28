@@ -17,7 +17,7 @@
 # - maximum file size and memory usage in cluster job submission need to be large enough, otherwise Cell Ranger fails
 # - option '--nosecondary' disables secondary analysis (e.g. dimension reduction) for faster runtime
 
-# runtime: ~2-6 hours (with 10 cores)
+# runtime: ~2 days
 
 
 # set working directory for output path (Cell Ranger does not have any other 
