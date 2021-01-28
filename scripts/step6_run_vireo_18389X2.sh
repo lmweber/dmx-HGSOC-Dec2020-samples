@@ -18,7 +18,7 @@
 # for more details:
 # - https://vireosnp.readthedocs.io/en/latest/manual.html
 
-# runtime: ~30 min
+# runtime: ~10 min
 
 
 mkdir -p outputs/vireo/18389X2
