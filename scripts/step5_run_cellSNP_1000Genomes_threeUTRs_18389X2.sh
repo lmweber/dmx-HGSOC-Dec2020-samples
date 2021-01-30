@@ -21,7 +21,7 @@
 # - https://vireosnp.readthedocs.io/en/latest/genotype.html
 # - https://github.com/single-cell-genetics/cellSNP
 
-# runtime: ~4 days
+# runtime: ~20 mins
 
 
 mkdir -p outputs/cellSNP_1000Genomes_threeUTRs/18389X2
