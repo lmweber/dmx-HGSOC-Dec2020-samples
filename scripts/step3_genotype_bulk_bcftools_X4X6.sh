@@ -27,7 +27,7 @@ mkdir -p outputs/genotype/bcftools
 bcftools mpileup -Ou \
 -f ../../cellranger/refdata-gex-GRCh38-2020-A/fasta/genome.fa \
 outputs/genotype/18431X4/STAR/Aligned.sortedByCoord.out.bam \
-outputs/genotype/18431X6/STAR/Aligned.sortedByCoord.out.bam \
+outputs/genotype/18431X6/STAR/Aligned.sortedByCoord.out.bam | \
 bcftools call -mv -Ov \
 -o outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_X4X6.vcf
 
