@@ -21,18 +21,17 @@
 # - https://vireosnp.readthedocs.io/en/latest/genotype.html
 # - https://github.com/single-cell-genetics/cellSNP
 
-# runtime: ~4 hours
+# runtime: ~4 days
 
 
 mkdir -p outputs/cellSNP_1000Genomes/18389X3
 
-cellsnp-lite \
+cellSNP \
 -s outputs/cellranger/18389X3/outs/possorted_genome_bam.bam \
 -b outputs/cellranger/18389X3/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
 -O outputs/cellSNP_1000Genomes/18389X3 \
 -R ../../cellSNP/genome1K.phase3.SNP_AF5e2.chr1toX.hg38.vcf \
 -p 10 \
 --minMAF=0.1 \
---minCOUNT=20 \
---gzip
+--minCOUNT=20
 
