@@ -23,5 +23,5 @@
 
 mkdir -p outputs/vireo_1000Genomes/18389X3
 
-vireo -c outputs/cellSNP_1000Genomes/18389X3 -N 4 -o outputs/vireo_1000Genomes/18389X3 --randSeed=123
+vireo -c outputs/cellSNP_1000Genomes/18389X3 -N 2 -o outputs/vireo_1000Genomes/18389X3 --randSeed=123
 
