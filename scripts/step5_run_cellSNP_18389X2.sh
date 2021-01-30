@@ -31,7 +31,7 @@ cellSNP \
 -s outputs/cellranger/18389X2/outs/possorted_genome_bam.bam \
 -b outputs/cellranger/18389X2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
 -O outputs/cellSNP/18389X2 \
--R outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_samples.vcf \
+-R outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_4samples.vcf \
 -p 10 \
 --minMAF=0.1 \
 --minCOUNT=20
