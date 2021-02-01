@@ -24,5 +24,5 @@ demuxlet \
 --alpha 0 --alpha 0.5 \
 --vcf outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_X4X6.vcf \
 --field GT \
---out outputs/demuxlet/18389X2_X4X6
+--out outputs/demuxlet/18389X2_X4X6/18389X2_X4X6
 
