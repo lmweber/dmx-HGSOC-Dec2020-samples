@@ -1,0 +1,130 @@
+---
+title: "Vireo and demuxlet results"
+author: "Lukas Weber"
+date: "2/8/2021"
+output: html_document
+---
+
+# Vireo and demuxlet results
+
+Demultiplexing results from Vireo and demuxlet using various combinations of reference genotypes.
+
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(readr))
+dir_out <- "../outputs"
+```
+
+
+# (1) Vireo
+
+## Bulk references X4-X7 (4 samples)
+
+### Pool 18389X2
+
+```{r, message=FALSE}
+out_vireo <- read_tsv(file.path(dir_out, "vireo", "18389X2", "summary.tsv"))
+out_vireo
+```
+
+### Pool 18389X3
+
+```{r, message=FALSE}
+out_vireo <- read_tsv(file.path(dir_out, "vireo", "18389X3", "summary.tsv"))
+out_vireo
+```
+
+
+## 1000 Genomes reference
+
+### Pool 18389X2
+
+```{r, message=FALSE}
+out_vireo <- read_tsv(file.path(dir_out, "vireo_1000Genomes_lite", "18389X2", "summary.tsv"))
+out_vireo
+```
+
+## Pool 18389X3
+
+```{r, message=FALSE}
+out_vireo <- read_tsv(file.path(dir_out, "vireo_1000Genomes_lite", "18389X3", "summary.tsv"))
+out_vireo
+```
+
+
+## 1000 Genomes reference (3' UTRs only)
+
+### Pool 18389X2
+
+```{r, message=FALSE}
+out_vireo <- read_tsv(file.path(dir_out, "vireo_1000Genomes_threeUTRs", "18389X2", "summary.tsv"))
+out_vireo
+```
+
+### Pool 18389X3
+
+```{r, message=FALSE}
+out_vireo <- read_tsv(file.path(dir_out, "vireo_1000Genomes_threeUTRs", "18389X3", "summary.tsv"))
+out_vireo
+```
+
+
+# (2) Demuxlet
+
+## Bulk references X4 and X6
+
+### Pool 18389X2
+
+```{r, message=FALSE}
+out_demux <- read_tsv(file.path(dir_out, "demuxlet", "18389X2_X4X6", "18389X2_X4X6.best"))
+#head(out_demux)
+tbl_18389X2_X4X6 <- table(out_demux$BEST)
+names(tbl_18389X2_X4X6) <- gsub("/genotype", "", 
+                                gsub("/STAR/Aligned.sortedByCoord.out.bam", "", 
+                                     gsub("-outputs", "", 
+                                          gsub("-0.500", "", names(tbl_18389X2_X4X6)))))
+tbl_18389X2_X4X6
+```
+
+### Pool 18389X3
+
+```{r, message=FALSE}
+out_demux <- read_tsv(file.path(dir_out, "demuxlet", "18389X3_X4X6", "18389X3_X4X6.best"))
+#head(out_demux)
+tbl_18389X3_X4X6 <- table(out_demux$BEST)
+names(tbl_18389X3_X4X6) <- gsub("/genotype", "", 
+                                gsub("/STAR/Aligned.sortedByCoord.out.bam", "", 
+                                     gsub("-outputs", "", 
+                                          gsub("-0.500", "", names(tbl_18389X3_X4X6)))))
+tbl_18389X3_X4X6
+```
+
+
+## Bulk references X5 and X7
+
+### Pool 18389X2
+
+```{r, message=FALSE}
+out_demux <- read_tsv(file.path(dir_out, "demuxlet", "18389X2_X5X7", "18389X2_X5X7.best"))
+#head(out_demux)
+tbl_18389X2_X5X7 <- table(out_demux$BEST)
+names(tbl_18389X2_X5X7) <- gsub("/genotype", "", 
+                                gsub("/STAR/Aligned.sortedByCoord.out.bam", "", 
+                                     gsub("-outputs", "", 
+                                          gsub("-0.500", "", names(tbl_18389X2_X5X7)))))
+tbl_18389X2_X5X7
+```
+
+### Pool 18389X3
+
+```{r, message=FALSE}
+out_demux <- read_tsv(file.path(dir_out, "demuxlet", "18389X3_X5X7", "18389X3_X5X7.best"))
+#head(out_demux)
+tbl_18389X3_X5X7 <- table(out_demux$BEST)
+names(tbl_18389X3_X5X7) <- gsub("/genotype", "", 
+                                gsub("/STAR/Aligned.sortedByCoord.out.bam", "", 
+                                     gsub("-outputs", "", 
+                                          gsub("-0.500", "", names(tbl_18389X3_X5X7)))))
+tbl_18389X3_X5X7
+```
+
