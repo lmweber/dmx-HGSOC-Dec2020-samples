@@ -130,10 +130,16 @@ for (g in seq_along(genotype_names)) {
 for (g in seq_along(genotype_names)) {
   for (p in seq_along(pool_names)) {
     
+    df_labels <- out_vireo[[p]][[g]]$df %>% 
+      group_by(donor_id) %>% 
+      summarize(med = median(n_vars))
+    
     # boxplots
     p_out <- ggplot(out_vireo[[p]][[g]]$df, 
                     aes(x = donor_id, y = log10(n_vars), color = donor_id, fill = donor_id)) + 
       geom_boxplot(alpha = 0.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = log10(med), label = med), 
+                color = "black") + 
       labs(title = paste0("Vireo"), 
            subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
       theme_bw()
