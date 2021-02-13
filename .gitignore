@@ -3,4 +3,6 @@
 .RData
 .Ruserdata
 outputs
+.DS_Store
 *.html
+plots/*

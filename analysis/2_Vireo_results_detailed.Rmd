@@ -1,0 +1,177 @@
+---
+title: "Vireo results: detailed"
+author: "Lukas Weber"
+date: "2/12/2021"
+output: html_document
+---
+
+# Vireo results
+
+Demultiplexing results from Vireo using various combinations of reference genotypes
+
+```{r}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggExtra))
+suppressPackageStartupMessages(library(grid))
+dir_out <- "../outputs"
+```
+
+
+## Load outputs
+
+```{r, message=FALSE}
+pool_names <- c("18389X2", "18389X3")
+genotype_names <- c("4bulk", "1000genomes", "1000genomes3utr")
+# vireo output directories corresponding to each of the genotype references
+vireo_out_names <- c("vireo", "vireo_1000Genomes_lite", "vireo_1000Genomes_threeUTRs")
+
+out_vireo <- vector("list", 2)
+names(out_vireo) <- pool_names
+
+for (p in seq_along(pool_names)) {
+  
+  out_vireo[[p]] <- vector("list", 3)
+  names(out_vireo[[p]]) <- genotype_names
+  
+  for (g in seq_along(genotype_names)) {
+    
+    # Vireo outputs
+    out_vireo_summary <- read_tsv(file.path(dir_out, vireo_out_names[g], pool_names[p], "summary.tsv"))
+    out_vireo_donor_ids <- read_tsv(file.path(dir_out, vireo_out_names[g], pool_names[p], "donor_ids.tsv"))
+    out_vireo_prob_singlet <- read_tsv(file.path(dir_out, vireo_out_names[g], pool_names[p], "prob_singlet.tsv.gz"))
+    # not needed
+    #out_vireo_prob_doublet <- read_tsv(file.path(dir_out, vireo_out_names[g], pool_names[p], "prob_doublet.tsv.gz"))
+    
+    df <- full_join(out_vireo_donor_ids, out_vireo_prob_singlet, by = "cell")
+    df$donor_id %<>% as.factor
+    
+    out_vireo[[p]][[g]]$df <- df
+    out_vireo[[p]][[g]]$summary <- out_vireo_summary
+  }
+}
+```
+
+
+## Plots
+
+### Probability of each donor per cell
+
+```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
+# plot probability of each donor per cell from Vireo
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_vireo[[p]][[g]]$df, aes(x = donor0, y = donor1, color = donor_id)) + 
+      geom_point(alpha = 0.25) + 
+      coord_fixed() + 
+      labs(x = "probability of donor 0", 
+           y = "probability of donor 1", 
+           color = "donor ID", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    p_out <- ggMarginal(p_out, type = "histogram", binwidth = 0.01)
+    
+    # required to show ggMarginal plots in RMarkdown
+    grid.newpage()
+    grid.draw(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_probs_donorid_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 6, height = 5, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
+### Number of variants per droplet
+
+```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
+# plot number of variants per droplet from Vireo
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    # scatterplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df, 
+                    aes(x = donor0, y = donor1, color = log10(n_vars))) + 
+      geom_point(alpha = 0.25) + 
+      scale_color_viridis_c() + 
+      coord_fixed() + 
+      labs(x = "probability of donor 0", 
+           y = "probability of donor 1", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    p_out <- ggMarginal(p_out, type = "histogram", binwidth = 0.01)
+    
+    # required to show ggMarginal plots in RMarkdown
+    grid.newpage()
+    grid.draw(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_probs_nvars_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 6, height = 5, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
+### Number of variants per droplet
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from Vireo
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    # boxplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df, 
+                    aes(x = donor_id, y = log10(n_vars), color = donor_id, fill = donor_id)) + 
+      geom_boxplot(alpha = 0.5) + 
+      labs(title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_box_nvars_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+### Number of cells per donor
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot number of cells per donor from Vireo
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_vireo[[p]][[g]]$summary, 
+                    aes(x = Var1, y = Freq, fill = Var1, label = Freq)) + 
+      geom_bar(stat = "identity") + 
+      geom_text(aes(y = max(Freq) / 20)) + 
+      labs(x = element_blank(), 
+           y = "count", 
+           fill = "donor ID", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_summary_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 5, height = 4, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
