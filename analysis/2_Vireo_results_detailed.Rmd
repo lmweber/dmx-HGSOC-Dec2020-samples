@@ -2,12 +2,21 @@
 title: "Vireo results: detailed"
 author: "Lukas Weber"
 date: "2/12/2021"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
 ---
 
 # Vireo results
 
-Demultiplexing results from Vireo using various combinations of reference genotypes
+Demultiplexing results from Vireo using various combinations of reference genotypes.
+
+
+# Load outputs
+
+
+## Load Vireo outputs
 
 ```{r}
 suppressPackageStartupMessages(library(dplyr))
@@ -19,8 +28,6 @@ suppressPackageStartupMessages(library(grid))
 dir_out <- "../outputs"
 ```
 
-
-## Load outputs
 
 ```{r, message=FALSE}
 pool_names <- c("18389X2", "18389X3")
@@ -55,7 +62,120 @@ for (p in seq_along(pool_names)) {
 ```
 
 
-## Plots
+## Load Cell Ranger outputs
+
+```{r, message=FALSE}
+suppressPackageStartupMessages(library(SingleCellExperiment))
+suppressPackageStartupMessages(library(DropletUtils))
+suppressPackageStartupMessages(library(scater))
+```
+
+
+```{r, message=FALSE}
+# load counts and create SingleCellExperiments
+
+out_cellranger_filt <- vector("list", 2)
+out_cellranger_raw <- vector("list", 2)
+names(out_cellranger_filt) <- pool_names
+names(out_cellranger_raw) <- pool_names
+
+for (p in seq_along(pool_names)) {
+  dir_cellranger <- file.path("..", "outputs", "cellranger", pool_names[p], "outs", "filtered_feature_bc_matrix")
+  sce <- read10xCounts(dir_cellranger)
+  out_cellranger_filt[[p]] <- sce
+}
+
+for (p in seq_along(pool_names)) {
+  dir_cellranger <- file.path("..", "outputs", "cellranger", pool_names[p], "outs", "raw_feature_bc_matrix")
+  sce <- read10xCounts(dir_cellranger)
+  out_cellranger_raw[[p]] <- sce
+}
+```
+
+
+## Calculate scater QC metrics
+
+Calculate total UMI counts, number of detected genes, and proportion of mitochondrial reads per droplet.
+
+```{r, message=FALSE}
+# filtered barcodes
+for (p in seq_along(pool_names)) {
+  sce <- out_cellranger_filt[[p]]
+  # identify mitochondrial genes
+  is_mito <- grepl("(^MT-)|(^mt-)", rowData(sce)$Symbol)
+  print(table(is_mito))
+  print(rowData(sce)$Symbol[is_mito])
+  # calculate QC metrics using scater
+  sce <- addPerCellQC(sce, subsets = list(mito = is_mito))
+  out_cellranger_filt[[p]] <- sce
+}
+
+# raw barcodes
+# for (p in seq_along(pool_names)) {
+#   sce <- out_cellranger_raw[[p]]
+#   # identify mitochondrial genes
+#   is_mito <- grepl("(^MT-)|(^mt-)", rowData(sce)$Symbol)
+#   print(table(is_mito))
+#   print(rowData(sce)$Symbol[is_mito])
+#   # calculate QC metrics using scater
+#   sce <- addPerCellQC(sce, subsets = list(mito = is_mito))
+#   out_cellranger_raw[[p]] <- sce
+# }
+```
+
+
+## Combine outputs
+
+Combine cell-level QC information from Cell Ranger / scater and Vireo outputs.
+
+```{r, message=FALSE}
+for (p in seq_along(pool_names)) {
+  for (g in seq_along(genotype_names)) {
+    
+    df <- out_vireo[[p]][[g]]$df
+    sce <- out_cellranger_filt[[p]]
+    
+    df_combined <- full_join(df, as_tibble(colData(sce)), by = c("cell" = "Barcode"))
+    
+    out_vireo[[p]][[g]]$df_combined <- df_combined
+  }
+}
+```
+
+
+
+# Plots
+
+## Summary
+
+### Number of cells per donor
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot number of cells per donor from Vireo
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_vireo[[p]][[g]]$summary, 
+                    aes(x = Var1, y = Freq, fill = Var1, label = Freq)) + 
+      geom_bar(stat = "identity") + 
+      geom_text(aes(y = max(Freq) / 20)) + 
+      labs(x = element_blank(), 
+           y = "count", 
+           fill = "donor ID", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_summary_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 5, height = 4, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
 
 ### Probability of each donor per cell
 
@@ -89,7 +209,9 @@ for (g in seq_along(genotype_names)) {
 ```
 
 
-### Number of variants per droplet
+## Number of variants
+
+### Number of variants per droplet (scatter)
 
 ```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
 # plot number of variants per droplet from Vireo
@@ -123,7 +245,7 @@ for (g in seq_along(genotype_names)) {
 ```
 
 
-### Number of variants per droplet
+### Number of variants per droplet (box)
 
 ```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
 # plot number of variants per droplet from Vireo
@@ -156,31 +278,141 @@ for (g in seq_along(genotype_names)) {
 ```
 
 
-### Number of cells per donor
+## UMIs and mitochondrial
 
-```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
-# plot number of cells per donor from Vireo
+### Proportion of mitochondrial UMIs per droplet (scatter)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
+# plot proportion of mitochondrial UMIs with Vireo results
 for (g in seq_along(genotype_names)) {
   for (p in seq_along(pool_names)) {
     
-    p_out <- ggplot(out_vireo[[p]][[g]]$summary, 
-                    aes(x = Var1, y = Freq, fill = Var1, label = Freq)) + 
-      geom_bar(stat = "identity") + 
-      geom_text(aes(y = max(Freq) / 20)) + 
+    # scatterplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor0, y = donor1, color = subsets_mito_percent)) + 
+      geom_point(alpha = 0.25) + 
+      scale_color_viridis_c() + 
+      coord_fixed() + 
+      labs(x = "probability of donor 0", 
+           y = "probability of donor 1", 
+           color = "mito", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    p_out <- ggMarginal(p_out, type = "histogram", binwidth = 0.01)
+    
+    # required to show ggMarginal plots in RMarkdown
+    grid.newpage()
+    grid.draw(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_probs_mito_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 6, height = 5, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
+### Proportion of mitochondrial UMIs per droplet (box)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot proportion of mitochondrial UMIs with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
+      group_by(donor_id) %>% 
+      summarize(medmito = median(subsets_mito_percent), 
+                ncells = n())
+    
+    # boxplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor_id, y = subsets_mito_percent, color = donor_id, fill = donor_id)) + 
+      geom_boxplot(alpha = 0.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = medmito, label = round(medmito, 1)), 
+                color = "black", size = 3.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = 5, label = paste0("n_cells:\n", ncells)), 
+                color = "black", size = 3.5) + 
       labs(x = element_blank(), 
-           y = "count", 
-           fill = "donor ID", 
+           y = "percent mitochondrial UMIs", 
            title = paste0("Vireo"), 
            subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
       theme_bw()
     
     print(p_out)
     
-    fn <- file.path("..", "plots", paste0("Vireo_summary_", pool_names[p], "_", genotype_names[g], ".png"))
-    png(fn, width = 5, height = 4, units = "in", res = 200)
-    print(p_out)
-    dev.off()
+    fn <- file.path("..", "plots", paste0("Vireo_box_mito_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
   }
 }
 ```
+
+
+### Total UMIs per droplet
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot total UMIs with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
+      group_by(donor_id) %>% 
+      summarize(medsum = median(sum), 
+                ncells = n())
+    
+    # boxplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor_id, y = log10(sum), color = donor_id, fill = donor_id)) + 
+      geom_boxplot(alpha = 0.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = log10(medsum), label = medsum), 
+                color = "black", size = 3.5) + 
+      labs(x = element_blank(), 
+           y = "log10(total UMIs)", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_box_sum_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+### Detected genes per droplet
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot detected genes with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
+      group_by(donor_id) %>% 
+      summarize(meddetected = median(detected), 
+                ncells = n())
+    
+    # boxplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor_id, y = log10(detected), color = donor_id, fill = donor_id)) + 
+      geom_boxplot(alpha = 0.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = log10(meddetected), label = meddetected), 
+                color = "black", size = 3.5) + 
+      labs(x = element_blank(), 
+           y = "log10(detected genes)", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_box_detected_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
 
