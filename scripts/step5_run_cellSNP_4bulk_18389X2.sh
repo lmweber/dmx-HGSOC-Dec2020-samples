@@ -22,15 +22,15 @@
 # - https://vireosnp.readthedocs.io/en/latest/genotype.html
 # - https://github.com/single-cell-genetics/cellSNP
 
-# runtime: ~4 days
+# runtime: 
 
 
-mkdir -p outputs/cellSNP/18389X3
+mkdir -p outputs/cellSNP_4bulk/18389X2
 
-cellSNP \
--s outputs/cellranger/18389X3/outs/possorted_genome_bam.bam \
--b outputs/cellranger/18389X3/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
--O outputs/cellSNP/18389X3 \
+cellsnp-lite \
+-s outputs/cellranger/18389X2/outs/possorted_genome_bam.bam \
+-b outputs/cellranger/18389X2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
+-O outputs/cellSNP_4bulk/18389X2 \
 -R outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_4samples.vcf \
 -p 10 \
 --minMAF=0.1 \

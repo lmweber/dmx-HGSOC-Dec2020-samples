@@ -14,7 +14,8 @@
 
 # notes:
 # - running cellSNP in mode 1
-# - using .vcf file from 1000 Genomes Project provided by cellSNP authors
+# - using .vcf file from best-performing option for genotyping step (matched bulk 
+# RNA-seq samples using bcftools)
 # - requires BAM file, cell barcodes file, and .vcf file
 
 # for more details:
@@ -24,13 +25,13 @@
 # runtime: 
 
 
-mkdir -p outputs/cellSNP_1000Genomes_threeUTRs/18389X2
+mkdir -p outputs/cellSNP_4bulk/18389X3
 
 cellsnp-lite \
--s outputs/cellranger/18389X2/outs/possorted_genome_bam.bam \
--b outputs/cellranger/18389X2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
--O outputs/cellSNP_1000Genomes_threeUTRs/18389X2 \
--R ../../cellSNP/genome1K.phase3.SNP_AF5e2.chr1toX.hg38.threeUTRs.vcf \
+-s outputs/cellranger/18389X3/outs/possorted_genome_bam.bam \
+-b outputs/cellranger/18389X3/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
+-O outputs/cellSNP_4bulk/18389X3 \
+-R outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_4samples.vcf \
 -p 10 \
 --minMAF=0.1 \
 --minCOUNT=20

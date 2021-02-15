@@ -21,12 +21,12 @@
 # - https://vireosnp.readthedocs.io/en/latest/genotype.html
 # - https://github.com/single-cell-genetics/cellSNP
 
-# runtime: ~4 days
+# runtime: 
 
 
 mkdir -p outputs/cellSNP_1000Genomes/18389X2
 
-cellSNP \
+cellsnp-lite \
 -s outputs/cellranger/18389X2/outs/possorted_genome_bam.bam \
 -b outputs/cellranger/18389X2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
 -O outputs/cellSNP_1000Genomes/18389X2 \
