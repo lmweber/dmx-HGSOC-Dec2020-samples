@@ -21,7 +21,7 @@
 # runtime: ~10 min
 
 
-mkdir -p outputs/vireo/18389X2
+mkdir -p outputs/vireo_2bulkX5X7/18389X2
 
-vireo -c outputs/cellSNP/18389X2 -N 2 -o outputs/vireo/18389X2 --randSeed=123
+vireo -c outputs/cellSNP_2bulkX5X7/18389X2 -N 2 -o outputs/vireo_2bulkX5X7/18389X2 --randSeed=123
 
