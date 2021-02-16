@@ -1,7 +1,7 @@
 ---
 title: "Vireo results: detailed"
 author: "Lukas Weber"
-date: "2/12/2021"
+date: "2/16/2021"
 output:
   html_document:
     toc: true
@@ -31,16 +31,16 @@ dir_out <- "../outputs"
 
 ```{r, message=FALSE}
 pool_names <- c("18389X2", "18389X3")
-genotype_names <- c("4bulk", "1000genomes", "1000genomes3utr")
+genotype_names <- c("4bulk", "2bulkX4X6", "2bulkX5X7", "1000genomes", "1000genomes3utr")
 # vireo output directories corresponding to each of the genotype references
-vireo_out_names <- c("vireo", "vireo_1000Genomes_lite", "vireo_1000Genomes_threeUTRs")
+vireo_out_names <- c("vireo_4bulk", "vireo_2bulkX4X6", "vireo_2bulkX5X7", "vireo_1000Genomes", "vireo_1000Genomes_threeUTRs")
 
 out_vireo <- vector("list", 2)
 names(out_vireo) <- pool_names
 
 for (p in seq_along(pool_names)) {
   
-  out_vireo[[p]] <- vector("list", 3)
+  out_vireo[[p]] <- vector("list", length(genotype_names))
   names(out_vireo[[p]]) <- genotype_names
   
   for (g in seq_along(genotype_names)) {
@@ -74,8 +74,8 @@ suppressPackageStartupMessages(library(scater))
 ```{r, message=FALSE}
 # load counts and create SingleCellExperiments
 
-out_cellranger_filt <- vector("list", 2)
-out_cellranger_raw <- vector("list", 2)
+out_cellranger_filt <- vector("list", length(pool_names))
+out_cellranger_raw <- vector("list", length(pool_names))
 names(out_cellranger_filt) <- pool_names
 names(out_cellranger_raw) <- pool_names
 
