@@ -209,6 +209,7 @@ for (g in seq_along(genotype_names)) {
 ```
 
 
+
 ## Number of variants
 
 ### Number of variants per droplet (scatter)
@@ -278,7 +279,150 @@ for (g in seq_along(genotype_names)) {
 ```
 
 
-## UMIs and mitochondrial
+
+## Number of UMIs
+
+### Total UMIs per droplet (scatter)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
+# plot total UMIs with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    # scatterplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor0, y = donor1, color = log10(sum))) + 
+      geom_point(alpha = 0.25) + 
+      scale_color_viridis_c() + 
+      coord_fixed() + 
+      labs(x = "probability of donor 0", 
+           y = "probability of donor 1", 
+           color = "log10(total UMIs)", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    p_out <- ggMarginal(p_out, type = "histogram", binwidth = 0.01)
+    
+    # required to show ggMarginal plots in RMarkdown
+    grid.newpage()
+    grid.draw(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_probs_sum_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 6, height = 5, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
+### Total UMIs per droplet (box)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot total UMIs with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
+      group_by(donor_id) %>% 
+      summarize(medsum = median(sum), 
+                ncells = n())
+    
+    # boxplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor_id, y = log10(sum), color = donor_id, fill = donor_id)) + 
+      geom_boxplot(alpha = 0.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = log10(medsum), label = medsum), 
+                color = "black", size = 3.5) + 
+      labs(x = element_blank(), 
+           y = "log10(total UMIs)", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_box_sum_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+
+## Number of detected genes
+
+### Detected genes per droplet (scatter)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
+# plot detected genes with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    # scatterplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor0, y = donor1, color = log10(detected))) + 
+      geom_point(alpha = 0.25) + 
+      scale_color_viridis_c() + 
+      coord_fixed() + 
+      labs(x = "probability of donor 0", 
+           y = "probability of donor 1", 
+           color = "log10(detected)", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    p_out <- ggMarginal(p_out, type = "histogram", binwidth = 0.01)
+    
+    # required to show ggMarginal plots in RMarkdown
+    grid.newpage()
+    grid.draw(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_probs_detected_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 6, height = 5, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
+### Detected genes per droplet (box)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot detected genes with Vireo results
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
+      group_by(donor_id) %>% 
+      summarize(meddetected = median(detected), 
+                ncells = n())
+    
+    # boxplots
+    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
+                    aes(x = donor_id, y = log10(detected), color = donor_id, fill = donor_id)) + 
+      geom_boxplot(alpha = 0.5) + 
+      geom_text(data = df_labels, aes(x = donor_id, y = log10(meddetected), label = meddetected), 
+                color = "black", size = 3.5) + 
+      labs(x = element_blank(), 
+           y = "log10(detected genes)", 
+           title = paste0("Vireo"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("Vireo_box_detected_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+
+## Proportion of mitochondrial UMIs
 
 ### Proportion of mitochondrial UMIs per droplet (scatter)
 
@@ -344,72 +488,6 @@ for (g in seq_along(genotype_names)) {
     print(p_out)
     
     fn <- file.path("..", "plots", paste0("Vireo_box_mito_", pool_names[p], "_", genotype_names[g], ".png"))
-    ggsave(fn, width = 5, height = 4)
-  }
-}
-```
-
-
-### Total UMIs per droplet
-
-```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
-# plot total UMIs with Vireo results
-for (g in seq_along(genotype_names)) {
-  for (p in seq_along(pool_names)) {
-    
-    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
-      group_by(donor_id) %>% 
-      summarize(medsum = median(sum), 
-                ncells = n())
-    
-    # boxplots
-    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
-                    aes(x = donor_id, y = log10(sum), color = donor_id, fill = donor_id)) + 
-      geom_boxplot(alpha = 0.5) + 
-      geom_text(data = df_labels, aes(x = donor_id, y = log10(medsum), label = medsum), 
-                color = "black", size = 3.5) + 
-      labs(x = element_blank(), 
-           y = "log10(total UMIs)", 
-           title = paste0("Vireo"), 
-           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
-      theme_bw()
-    
-    print(p_out)
-    
-    fn <- file.path("..", "plots", paste0("Vireo_box_sum_", pool_names[p], "_", genotype_names[g], ".png"))
-    ggsave(fn, width = 5, height = 4)
-  }
-}
-```
-
-
-### Detected genes per droplet
-
-```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
-# plot detected genes with Vireo results
-for (g in seq_along(genotype_names)) {
-  for (p in seq_along(pool_names)) {
-    
-    df_labels <- out_vireo[[p]][[g]]$df_combined %>% 
-      group_by(donor_id) %>% 
-      summarize(meddetected = median(detected), 
-                ncells = n())
-    
-    # boxplots
-    p_out <- ggplot(out_vireo[[p]][[g]]$df_combined, 
-                    aes(x = donor_id, y = log10(detected), color = donor_id, fill = donor_id)) + 
-      geom_boxplot(alpha = 0.5) + 
-      geom_text(data = df_labels, aes(x = donor_id, y = log10(meddetected), label = meddetected), 
-                color = "black", size = 3.5) + 
-      labs(x = element_blank(), 
-           y = "log10(detected genes)", 
-           title = paste0("Vireo"), 
-           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
-      theme_bw()
-    
-    print(p_out)
-    
-    fn <- file.path("..", "plots", paste0("Vireo_box_detected_", pool_names[p], "_", genotype_names[g], ".png"))
     ggsave(fn, width = 5, height = 4)
   }
 }
