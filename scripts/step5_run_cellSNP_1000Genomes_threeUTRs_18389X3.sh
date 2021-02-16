@@ -21,7 +21,7 @@
 # - https://vireosnp.readthedocs.io/en/latest/genotype.html
 # - https://github.com/single-cell-genetics/cellSNP
 
-# runtime: 
+# runtime: up to 5 hours (depending on genotype file)
 
 
 mkdir -p outputs/cellSNP_1000Genomes_threeUTRs/18389X3
@@ -33,5 +33,6 @@ cellsnp-lite \
 -R ../../cellSNP/genome1K.phase3.SNP_AF5e2.chr1toX.hg38.threeUTRs.vcf \
 -p 10 \
 --minMAF=0.1 \
---minCOUNT=20
+--minCOUNT=20 \
+--gzip
 

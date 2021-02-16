@@ -22,7 +22,7 @@
 # - https://vireosnp.readthedocs.io/en/latest/genotype.html
 # - https://github.com/single-cell-genetics/cellSNP
 
-# runtime: 
+# runtime: up to 5 hours (depending on genotype file)
 
 
 mkdir -p outputs/cellSNP_4bulk/18389X2
@@ -34,5 +34,6 @@ cellsnp-lite \
 -R outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_4samples.vcf \
 -p 10 \
 --minMAF=0.1 \
---minCOUNT=20
+--minCOUNT=20 \
+--gzip
 
