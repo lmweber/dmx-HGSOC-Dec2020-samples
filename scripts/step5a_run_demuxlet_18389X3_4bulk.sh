@@ -16,13 +16,13 @@
 # runtime:
 
 
-mkdir -p outputs/demuxlet/18389X2
+mkdir -p outputs/demuxlet/18389X3_4bulk
 
 demuxlet \
---sam outputs/cellranger/18389X2/outs/possorted_genome_bam.bam \
---group-list outputs/cellranger/18389X2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
+--sam outputs/cellranger/18389X3/outs/possorted_genome_bam.bam \
+--group-list outputs/cellranger/18389X3/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
 --alpha 0 --alpha 0.5 \
 --vcf outputs/genotype/bcftools/bcftools_HGSOC_Dec2020_4samples.vcf \
 --field GT \
---out outputs/demuxlet/18389X2/18389X2
+--out outputs/demuxlet/18389X3_4bulk/18389X3_4bulk
 
