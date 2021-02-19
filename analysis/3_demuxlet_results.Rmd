@@ -256,7 +256,7 @@ for (g in seq_along(genotype_names)) {
 ```
 
 
-### Number of variants overlapping with any read (log10)
+### Number of variants (log10)
 
 ```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
 # plot number of variants per droplet from demuxlet
@@ -266,7 +266,7 @@ for (g in seq_along(genotype_names)) {
     p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, aes(x = log10(N.SNP))) + 
       geom_histogram(fill = "darkgreen") + 
       labs(title = paste0("demuxlet"), 
-           subtitle = paste0("Number of variants overlapping with reads\n", 
+           subtitle = paste0("Number of variants\n", 
                              "pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
       theme_bw()
     
