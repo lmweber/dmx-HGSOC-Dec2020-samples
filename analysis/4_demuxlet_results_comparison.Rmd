@@ -1,0 +1,150 @@
+---
+title: "demuxlet results: comparison with previous samples"
+author: "Lukas Weber"
+date: "2/18/2021"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+# demuxlet results
+
+Demultiplexing results from demuxlet for previous single-cell samples (16030X2-X4). For comparison with demuxlet results from new samples.
+
+
+# Load outputs
+
+
+## Load demuxlet outputs
+
+```{r}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggExtra))
+suppressPackageStartupMessages(library(grid))
+```
+
+
+```{r, message=FALSE}
+dir_out <- "../outputs/demuxlet_previous_samples/HGSOC/20pc/bulkBcftools_demuxlet"
+
+# demuxlet outputs
+out_demuxlet_best <- read_tsv(file.path(dir_out, "demuxlet.best"))
+# not needed
+#out_demuxlet_single <- read_tsv(file.path(dir_out, "demuxlet.single"))
+#out_demuxlet_sing2 <- read_tsv(file.path(dir_out, "demuxlet.sing2"))
+
+# clean group names and combine doublets into a single group
+out_demuxlet_best$best_clean <- gsub("AMB-.*", "AMB", 
+                                     gsub("DBL-.*", "DBL", out_demuxlet_best$BEST))
+```
+
+
+
+# Plots
+
+## Summary
+
+### Number of cells per donor
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot number of cells per donor from demuxlet
+df <- as.data.frame(table(out_demuxlet_best$best_clean))
+
+p_out <- ggplot(df, aes(x = Var1, y = Freq, fill = Var1, label = Freq)) + 
+  geom_bar(stat = "identity") + 
+  geom_text(aes(y = max(Freq) / 20)) + 
+  labs(x = element_blank(), 
+       y = "count", 
+       fill = "donor ID", 
+       title = paste0("demuxlet"), 
+       subtitle = paste0("computational pool: 16030X2-X4, 20pc doublets")) + 
+  theme_bw()
+
+print(p_out)
+
+fn <- file.path("..", "plots", "demuxlet_summary_previous_samples.png")
+png(fn, width = 5, height = 4, units = "in", res = 200)
+print(p_out)
+dev.off()
+```
+
+
+
+## Number of reads overlapping with variants
+
+### Number of reads overlapping with variants per droplet (raw, log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+p_out <- ggplot(out_demuxlet_best, aes(x = log10(RD.TOTL))) + 
+  geom_histogram(fill = "blue3") + 
+  labs(title = paste0("demuxlet"), 
+       subtitle = paste0("reads overlapping variants: raw\n", 
+                         "computational pool: 16030X2-X4, 20pc doublets")) + 
+  theme_bw()
+
+print(p_out)
+
+fn <- file.path("..", "plots", "demuxlet_RD.TOTL_previous_samples.png")
+ggsave(fn, width = 5, height = 4)
+```
+
+
+### Number of reads overlapping with variants per droplet (reads passing QC, log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+p_out <- ggplot(out_demuxlet_best, aes(x = log10(RD.PASS))) + 
+  geom_histogram(fill = "blue4") + 
+  labs(title = paste0("demuxlet"), 
+       subtitle = paste0("reads overlapping variants: reads passing QC\n", 
+                         "computational pool: 16030X2-X4, 20pc doublets")) + 
+  theme_bw()
+
+print(p_out)
+
+fn <- file.path("..", "plots", "demuxlet_RD.PASS_previous_samples.png")
+ggsave(fn, width = 5, height = 4)
+```
+
+
+### Number of UMIs overlapping with variants per droplet (UMIs passing QC, log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+p_out <- ggplot(out_demuxlet_best, aes(x = log10(RD.UNIQ))) + 
+  geom_histogram(fill = "navy") + 
+  labs(title = paste0("demuxlet"), 
+       subtitle = paste0("UMIs overlapping variants: UMIs passing QC\n", 
+                         "computational pool: 16030X2-X4, 20pc doublets")) + 
+  theme_bw()
+
+print(p_out)
+
+fn <- file.path("..", "plots", "demuxlet_RD.UNIQ_previous_samples.png")
+ggsave(fn, width = 5, height = 4)
+```
+
+
+### Number of variants overlapping with any read (log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+p_out <- ggplot(out_demuxlet_best, aes(x = log10(N.SNP))) + 
+  geom_histogram(fill = "darkgreen") + 
+  labs(title = paste0("demuxlet"), 
+       subtitle = paste0("Number of variants overlapping with reads\n", 
+                         "computational pool: 16030X2-X4, 20pc doublets")) + 
+  theme_bw()
+
+print(p_out)
+
+fn <- file.path("..", "plots", "demuxlet_N.SNP_previous_samples.png")
+ggsave(fn, width = 5, height = 4)
+```
+
+

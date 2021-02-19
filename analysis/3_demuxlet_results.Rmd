@@ -1,0 +1,316 @@
+---
+title: "demuxlet results"
+author: "Lukas Weber"
+date: "2/18/2021"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+# demuxlet results
+
+Demultiplexing results from demuxlet using various combinations of reference genotypes. For comparison with main results using Vireo.
+
+
+# Load outputs
+
+
+## Load demuxlet outputs
+
+```{r}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggExtra))
+suppressPackageStartupMessages(library(grid))
+dir_out <- "../outputs"
+```
+
+
+```{r, message=FALSE}
+pool_names <- c("18389X2", "18389X3")
+genotype_names <- c("4bulk", "2bulkX4X5", "2bulkX4X6", "2bulkX4X7", "2bulkX5X6", "2bulkX5X7", "2bulkX6X7")
+# demuxlet output directories corresponding to each of the genotype references
+demuxlet_out_names <- list(
+  "18389X2" = c("18389X2_4bulk", "18389X2_X4X5", "18389X2_X4X6", "18389X2_X4X7", "18389X2_X5X6", "18389X2_X5X7", "18389X2_X6X7"), 
+  "18389X3" = c("18389X3_4bulk", "18389X3_X4X5", "18389X3_X4X6", "18389X3_X4X7", "18389X3_X5X6", "18389X3_X5X7", "18389X3_X6X7")
+)
+
+out_demuxlet <- vector("list", 2)
+names(out_demuxlet) <- pool_names
+
+for (p in seq_along(pool_names)) {
+  
+  out_demuxlet[[p]] <- vector("list", length(genotype_names))
+  names(out_demuxlet[[p]]) <- genotype_names
+  
+  for (g in seq_along(genotype_names)) {
+    
+    # demuxlet outputs
+    out_demuxlet_best <- read_tsv(file.path(dir_out, "demuxlet", demuxlet_out_names[[p]][g], paste0(demuxlet_out_names[[p]][g], ".best")))
+    # not needed
+    #out_demuxlet_single <- read_tsv(file.path(dir_out, "demuxlet", demuxlet_out_names[[p]][g], paste0(demuxlet_out_names[[p]][g], ".single")))
+    #out_demuxlet_sing2 <- read_tsv(file.path(dir_out, "demuxlet", demuxlet_out_names[[p]][g], paste0(demuxlet_out_names[[p]][g], ".sing2")))
+    
+    out_demuxlet[[p]][[g]]$df <- out_demuxlet_best
+  }
+}
+```
+
+
+## Load Cell Ranger outputs
+
+```{r, message=FALSE}
+suppressPackageStartupMessages(library(SingleCellExperiment))
+suppressPackageStartupMessages(library(DropletUtils))
+suppressPackageStartupMessages(library(scater))
+```
+
+
+```{r, message=FALSE}
+# load counts and create SingleCellExperiments
+
+out_cellranger_filt <- vector("list", length(pool_names))
+out_cellranger_raw <- vector("list", length(pool_names))
+names(out_cellranger_filt) <- pool_names
+names(out_cellranger_raw) <- pool_names
+
+for (p in seq_along(pool_names)) {
+  dir_cellranger <- file.path("..", "outputs", "cellranger", pool_names[p], "outs", "filtered_feature_bc_matrix")
+  sce <- read10xCounts(dir_cellranger)
+  out_cellranger_filt[[p]] <- sce
+}
+
+for (p in seq_along(pool_names)) {
+  dir_cellranger <- file.path("..", "outputs", "cellranger", pool_names[p], "outs", "raw_feature_bc_matrix")
+  sce <- read10xCounts(dir_cellranger)
+  out_cellranger_raw[[p]] <- sce
+}
+```
+
+
+## Calculate scater QC metrics
+
+Calculate total UMI counts, number of detected genes, and proportion of mitochondrial reads per droplet.
+
+```{r, message=FALSE}
+# filtered barcodes
+for (p in seq_along(pool_names)) {
+  sce <- out_cellranger_filt[[p]]
+  # identify mitochondrial genes
+  is_mito <- grepl("(^MT-)|(^mt-)", rowData(sce)$Symbol)
+  print(table(is_mito))
+  print(rowData(sce)$Symbol[is_mito])
+  # calculate QC metrics using scater
+  sce <- addPerCellQC(sce, subsets = list(mito = is_mito))
+  out_cellranger_filt[[p]] <- sce
+}
+
+# raw barcodes
+# for (p in seq_along(pool_names)) {
+#   sce <- out_cellranger_raw[[p]]
+#   # identify mitochondrial genes
+#   is_mito <- grepl("(^MT-)|(^mt-)", rowData(sce)$Symbol)
+#   print(table(is_mito))
+#   print(rowData(sce)$Symbol[is_mito])
+#   # calculate QC metrics using scater
+#   sce <- addPerCellQC(sce, subsets = list(mito = is_mito))
+#   out_cellranger_raw[[p]] <- sce
+# }
+```
+
+
+## Combine outputs
+
+Combine cell-level QC information from Cell Ranger / scater and Vireo outputs.
+
+```{r, message=FALSE}
+for (p in seq_along(pool_names)) {
+  for (g in seq_along(genotype_names)) {
+    
+    df <- out_demuxlet[[p]][[g]]$df
+    sce <- out_cellranger_filt[[p]]
+    
+    df_combined <- full_join(df, as_tibble(colData(sce)), by = c("BARCODE" = "Barcode"))
+    
+    # clean group names and combine doublets into a single group
+    df_combined$best_clean <- gsub("18431", "", 
+                                   gsub("outputs/genotype/", "", 
+                                        gsub("/STAR.*", "", 
+                                             gsub("DBL-.*", "DBL", df_combined$BEST))))
+    
+    out_demuxlet[[p]][[g]]$df_combined <- df_combined
+  }
+}
+```
+
+
+
+# Plots
+
+## Summary
+
+### Number of cells per donor
+
+Note that we expect the correct genotype for each pool to be either X4-X6 or X5-X7.
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.5}
+# plot number of cells per donor from demuxlet
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    df <- as.data.frame(table(out_demuxlet[[p]][[g]]$df_combined$best_clean))
+    
+    p_out <- ggplot(df, aes(x = Var1, y = Freq, fill = Var1, label = Freq)) + 
+      geom_bar(stat = "identity") + 
+      geom_text(aes(y = max(Freq) / 20)) + 
+      labs(x = element_blank(), 
+           y = "count", 
+           fill = "donor ID", 
+           title = paste0("demuxlet"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("demuxlet_summary_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 5, height = 4, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
+
+## Number of reads overlapping with variants
+
+### Number of reads overlapping with variants per droplet (raw, log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, aes(x = log10(RD.TOTL))) + 
+      geom_histogram(fill = "blue3") + 
+      labs(title = paste0("demuxlet"), 
+           subtitle = paste0("reads overlapping variants: raw\n", 
+                             "pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("demuxlet_RD.TOTL_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+### Number of reads overlapping with variants per droplet (reads passing QC, log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, aes(x = log10(RD.PASS))) + 
+      geom_histogram(fill = "blue4") + 
+      labs(title = paste0("demuxlet"), 
+           subtitle = paste0("reads overlapping variants: reads passing QC\n", 
+                             "pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("demuxlet_RD.PASS_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+### Number of UMIs overlapping with variants per droplet (UMIs passing QC, log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, aes(x = log10(RD.UNIQ))) + 
+      geom_histogram(fill = "navy") + 
+      labs(title = paste0("demuxlet"), 
+           subtitle = paste0("UMIs overlapping variants: UMIs passing QC\n", 
+                             "pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("demuxlet_RD.UNIQ_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+### Number of variants overlapping with any read (log10)
+
+```{r, message=FALSE, fig.width=4.5, fig.height=3.75}
+# plot number of variants per droplet from demuxlet
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, aes(x = log10(N.SNP))) + 
+      geom_histogram(fill = "darkgreen") + 
+      labs(title = paste0("demuxlet"), 
+           subtitle = paste0("UMIs overlapping variants: UMIs passing QC\n", 
+                             "pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    print(p_out)
+    
+    fn <- file.path("..", "plots", paste0("demuxlet_N.SNP_", pool_names[p], "_", genotype_names[g], ".png"))
+    ggsave(fn, width = 5, height = 4)
+  }
+}
+```
+
+
+
+## Log likelihood for each donor
+
+### Log likelihood for each donor per droplet
+
+```{r, message=FALSE, fig.width=4.5, fig.height=4.5}
+# plot probability of each donor per cell from demuxlet
+for (g in seq_along(genotype_names)) {
+  for (p in seq_along(pool_names)) {
+    
+    p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, 
+                    aes(x = SNG.LLK1, y = SNG.LLK2, color = best_clean)) + 
+      geom_point(alpha = 0.25) + 
+      labs(x = "log likelihood of donor 1", 
+           y = "log likelihood of donor 2", 
+           color = "donor ID", 
+           title = paste0("demuxlet"), 
+           subtitle = paste0("pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
+      theme_bw()
+    
+    p_out <- ggMarginal(p_out, type = "histogram")
+    
+    # required to show ggMarginal plots in RMarkdown
+    grid.newpage()
+    grid.draw(p_out)
+    
+    fn <- file.path("..", "plots", paste0("demuxlet_loglik_donorid_", pool_names[p], "_", genotype_names[g], ".png"))
+    png(fn, width = 6, height = 5, units = "in", res = 200)
+    print(p_out)
+    dev.off()
+  }
+}
+```
+
+
