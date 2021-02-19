@@ -266,7 +266,7 @@ for (g in seq_along(genotype_names)) {
     p_out <- ggplot(out_demuxlet[[p]][[g]]$df_combined, aes(x = log10(N.SNP))) + 
       geom_histogram(fill = "darkgreen") + 
       labs(title = paste0("demuxlet"), 
-           subtitle = paste0("UMIs overlapping variants: UMIs passing QC\n", 
+           subtitle = paste0("Number of variants overlapping with reads\n", 
                              "pool: ", pool_names[p], "\n", "genotype: ", genotype_names[g])) + 
       theme_bw()
     
